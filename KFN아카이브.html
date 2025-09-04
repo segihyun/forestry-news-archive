@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국임업신문 아카이브</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2d5016;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .upload-section, .archive-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #4a7c59;
+            background: #f8fff8;
+        }
+
+        .upload-area.dragover {
+            border-color: #2d5016;
+            background: #f0f8f0;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #4a7c59;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a7c59;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            flex-grow: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .file-details {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-view {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #218838;
+        }
+
+        .btn-download {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #138496;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2d5016, #4a7c59);
+            transition: width 0.3s ease;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-uploading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌲 한국임업신문 아카이브</h1>
+            <p>구독자를 위한 과거 신문 검색 서비스</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 업로드 섹션 -->
+            <div class="upload-section">
+                <h2 class="section-title">
+                    <span>📤</span> 신문 업로드
+                </h2>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <h3>PDF 파일을 여기로 끌어오거나 클릭하여 선택하세요</h3>
+                    <p>여러 파일을 한 번에 업로드할 수 있습니다</p>
+                    <input type="file" id="fileInput" multiple accept=".pdf" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="publishDate">발행일</label>
+                    <input type="date" id="publishDate">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        💡 발행일이 신문 제목이 됩니다 (예: 2024년 1월 15일 한국임업신문)
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">특별 제목 (선택사항)</label>
+                    <input type="text" id="title" placeholder="특별한 이벤트나 기념호인 경우에만 입력">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        비워두면 "YYYY년 MM월 DD일 한국임업신문"으로 자동 생성됩니다
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="enableOCR">
+                        <input type="checkbox" id="enableOCR" checked style="margin-right: 8px;">
+                        OCR 텍스트 추출 (검색 기능 향상)
+                    </label>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        ✨ PDF 내용을 분석하여 키워드 검색이 가능해집니다
+                    </small>
+                </div>
+
+                <button class="btn" id="uploadBtn" disabled>업로드 시작</button>
+
+                <div class="file-list" id="selectedFiles"></div>
+            </div>
+
+            <!-- 아카이브 섹션 -->
+            <div class="archive-section">
+                <h2 class="section-title">
+                    <span>🗃️</span> 보관된 신문
+                </h2>
+
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="날짜나 키워드로 검색... (예: 2024-01, 산림, 목재)">
+                    <div style="margin-top: 8px; font-size: 0.9em; color: #666;">
+                        🔍 <strong>똑똑한 검색:</strong> 날짜(2024-01) 또는 PDF 내용까지 찾아드려요!
+                    </div>
+                </div>
+
+                <div id="archiveList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🌲</div>
+                        <h3>아직 업로드된 신문이 없습니다</h3>
+                        <p>왼쪽에서 한국임업신문 PDF 파일을 업로드해보세요</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OCR 진행 상황 모달 -->
+    <div id="ocrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px; width: 90%;">
+            <div style="font-size: 3em; margin-bottom: 20px;">🤖</div>
+            <h3 style="margin-bottom: 15px;">PDF 내용 분석 중...</h3>
+            <p id="ocrStatus" style="color: #666; margin-bottom: 20px;">텍스트를 추출하고 있습니다</p>
+            <div class="progress-bar" style="margin-bottom: 15px;">
+                <div class="progress-fill" id="ocrProgress" style="width: 0%"></div>
+            </div>
+            <p style="font-size: 0.9em; color: #999;">잠시만 기다려주세요. 파일 크기에 따라 시간이 걸릴 수 있습니다.</p>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- PDF.js 및 Tesseract.js 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+    
+    <script>
+        // 전역 변수
+        let selectedFiles = [];
+        let archiveData = JSON.parse(localStorage.getItem('newspaperArchive') || '[]');
+        
+        // PDF.js 워커 설정
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // DOM 요소들
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const selectedFilesDiv = document.getElementById('selectedFiles');
+        const archiveList = document.getElementById('archiveList');
+        const searchInput = document.getElementById('searchInput');
+        const publishDate = document.getElementById('publishDate');
+        const titleInput = document.getElementById('title');
+        const enableOCR = document.getElementById('enableOCR');
+        const ocrModal = document.getElementById('ocrModal');
+        const ocrStatus = document.getElementById('ocrStatus');
+        const ocrProgress = document.getElementById('ocrProgress');
+
+        // 이벤트 리스너 설정
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('drop', handleDrop);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        fileInput.addEventListener('change', handleFileSelect);
+        uploadBtn.addEventListener('click', handleUpload);
+        searchInput.addEventListener('input', renderArchive);
+
+        // 파일 업로드 버튼 활성화 체크
+        function checkUploadButton() {
+            const hasFiles = selectedFiles.length > 0;
+            const hasDate = publishDate.value !== '';
+            
+            uploadBtn.disabled = !(hasFiles && hasDate);
+        }
+
+        publishDate.addEventListener('change', checkUploadButton);
+
+        // 드래그 앤 드롭 처리
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type === 'application/pdf');
+            addFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            addFiles(files);
+        }
+
+        // 파일 추가
+        function addFiles(files) {
+            files.forEach(file => {
+                if (file.type === 'application/pdf') {
+                    const fileObj = {
+                        id: Date.now() + Math.random(),
+                        file: file,
+                        name: file.name,
+                        size: (file.size / 1024 / 1024).toFixed(1) + 'MB',
+                        status: 'ready'
+                    };
+                    selectedFiles.push(fileObj);
+                }
+            });
+            
+            renderSelectedFiles();
+            checkUploadButton();
+        }
+
+        // 선택된 파일 목록 렌더링
+        function renderSelectedFiles() {
+            if (selectedFiles.length === 0) {
+                selectedFilesDiv.innerHTML = '';
+                return;
+            }
+
+            selectedFilesDiv.innerHTML = `
+                <h4 style="margin-bottom: 15px;">선택된 파일 (${selectedFiles.length}개)</h4>
+                ${selectedFiles.map(file => `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-details">${file.size}
+                                ${file.ocrStatus ? `<br><small style="color: #007bff;">🤖 ${file.ocrStatus}</small>` : ''}
+                            </div>
+                            ${file.status !== 'ready' ? `
+                                <div class="status ${file.status === 'success' ? 'status-success' : 'status-uploading'}">
+                                    ${file.status === 'success' ? '✅ 완료' : '📤 업로드 중...'}
+                                </div>
+                            ` : ''}
+                            ${file.progress !== undefined ? `
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${file.progress}%"></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="file-actions">
+                            ${file.status === 'ready' ? `
+                                <button class="btn-small btn-delete" onclick="removeFile('${file.id}')">삭제</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // 파일 제거
+        function removeFile(fileId) {
+            selectedFiles = selectedFiles.filter(f => f.id != fileId);
+            renderSelectedFiles();
+            checkUploadButton();
+        }
+
+        // PDF에서 텍스트 추출 (OCR)
+        async function extractTextFromPDF(file) {
+            try {
+                showOCRModal();
+                updateOCRStatus('PDF 파일을 분석하고 있습니다...', 10);
+
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                const numPages = pdf.numPages;
+                let fullText = '';
+
+                updateOCRStatus(`총 ${numPages}페이지를 처리합니다...`, 20);
+
+                for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                    updateOCRStatus(`${pageNum}/${numPages} 페이지 처리 중...`, 20 + (pageNum / numPages) * 60);
+                    
+                    const page = await pdf.getPage(pageNum);
+                    
+                    // 1. 먼저 PDF의 텍스트 레이어에서 텍스트 추출 시도
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    
+                    if (pageText.trim().length > 50) {
+                        // 텍스트 레이어가 충분한 내용을 가지고 있으면 OCR 건너뛰기
+                        fullText += pageText + '\n\n';
+                        continue;
+                    }
+
+                    // 2. 텍스트 레이어가 부족하면 OCR 수행
+                    const viewport = page.getViewport({scale: 2.0});
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+
+                    // Canvas를 이미지로 변환하여 OCR
+                    const imageData = canvas.toDataURL('image/png');
+                    
+                    updateOCRStatus(`${pageNum}페이지 텍스트 인식 중...`, 20 + (pageNum / numPages) * 70);
+                    
+                    try {
+                        const result = await Tesseract.recognize(
+                            imageData,
+                            'kor+eng',
+                            {
+                                logger: m => {
+                                    if (m.status === 'recognizing text') {
+                                        const progress = Math.round(20 + (pageNum / numPages) * 70 + (m.progress * 10));
+                                        updateOCRStatus(`${pageNum}페이지 텍스트 인식 중... (${Math.round(m.progress * 100)}%)`, progress);
+                                    }
+                                }
+                            }
+                        );
+                        
+                        fullText += result.data.text + '\n\n';
+                    } catch (ocrError) {
+                        console.warn(`Page ${pageNum} OCR failed:`, ocrError);
+                        fullText += pageText + '\n\n'; // 폴백으로 텍스트 레이어 사용
+                    }
+                }
+
+                updateOCRStatus('텍스트 추출 완료!', 100);
+                hideOCRModal();
+                
+                return fullText.trim();
+            } catch (error) {
+                console.error('PDF 텍스트 추출 실패:', error);
+                hideOCRModal();
+                showToast('텍스트 추출에 실패했습니다. OCR 없이 진행합니다.', 'warning');
+                return '';
+            }
+        }
+
+        // OCR 모달 표시/숨김
+        function showOCRModal() {
+            ocrModal.style.display = 'flex';
+        }
+
+        function hideOCRModal() {
+            ocrModal.style.display = 'none';
+        }
+
+        function updateOCRStatus(message, progress) {
+            ocrStatus.textContent = message;
+            ocrProgress.style.width = progress + '%';
+        }
+
+        // 날짜를 한국어 형식으로 변환
+        function formatKoreanDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${year}년 ${month}월 ${day}일`;
+        }
+
+        // 업로드 처리 (OCR 포함)
+        async function handleUpload() {
+            if (selectedFiles.length === 0) return;
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '업로드 중...';
+
+            for (let file of selectedFiles) {
+                file.status = 'uploading';
+                file.progress = 0;
+                renderSelectedFiles();
+
+                // OCR 텍스트 추출
+                let extractedText = '';
+                if (enableOCR.checked) {
+                    file.ocrStatus = 'OCR 분석 중...';
+                    renderSelectedFiles();
+                    extractedText = await extractTextFromPDF(file.file);
+                }
+
+                // 가상의 업로드 진행률
+                await simulateUpload(file);
+
+                // 아카이브에 추가
+                const archiveItem = {
+                    id: file.id,
+                    title: titleInput.value || `${formatKoreanDate(publishDate.value)} 한국임업신문`,
+                    newspaper: 'forestry', // 고정값
+                    newspaperName: '한국임업신문',
+                    date: publishDate.value,
+                    filename: file.name,
+                    size: file.size,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    fileData: await fileToBase64(file.file),
+                    extractedText: extractedText, // OCR 결과 저장
+                    hasOCR: enableOCR.checked
+                };
+
+                archiveData.push(archiveItem);
+                localStorage.setItem('newspaperArchive', JSON.stringify(archiveData));
+
+                file.status = 'success';
+                file.progress = 100;
+                delete file.ocrStatus;
+                renderSelectedFiles();
+            }
+
+            showToast(`${selectedFiles.length}개 파일 업로드 완료! ${enableOCR.checked ? '📝 OCR 텍스트 추출도 완료되었습니다.' : ''} 🎉`);
+            
+            // 초기화
+            setTimeout(() => {
+                selectedFiles = [];
+                renderSelectedFiles();
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '업로드 시작';
+                titleInput.value = '';
+                renderArchive();
+            }, 1500);
+        }
+
+        // 업로드 시뮬레이션
+        function simulateUpload(file) {
+            return new Promise(resolve => {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 25;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        resolve();
+                    }
+                    file.progress = Math.min(progress, 100);
+                    renderSelectedFiles();
+                }, 200);
+            });
+        }
+
+        // 파일을 Base64로 변환 (실제로는 서버에 저장하겠지만 데모용)
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // 아카이브 렌더링 (OCR 검색 포함)
+        function renderArchive() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredData = archiveData.filter(item => {
+                // 기본 검색 (제목, 날짜)
+                const basicMatch = item.title.toLowerCase().includes(searchTerm) ||
+                    item.date.includes(searchTerm);
+                
+                // OCR 텍스트 검색
+                const ocrMatch = item.extractedText && 
+                    item.extractedText.toLowerCase().includes(searchTerm);
+                
+                return basicMatch || ocrMatch;
+            });
+
+            if (filteredData.length === 0) {
+                archiveList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">${searchTerm ? '🔍' : '🌲'}</div>
+                        <h3>${searchTerm ? '검색 결과가 없습니다' : '아직 업로드된 신문이 없습니다'}</h3>
+                        <p>${searchTerm ? 
+                            '다른 검색어를 시도해보세요<br><small>💡 날짜(2024-01) 또는 PDF 내용도 검색됩니다!</small>' : 
+                            '왼쪽에서 한국임업신문 PDF 파일을 업로드해보세요'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            archiveList.innerHTML = filteredData.map(item => {
+                // 검색어 하이라이트
+                let highlightedTitle = item.title;
+                let contentPreview = '';
+                
+                if (searchTerm && item.extractedText) {
+                    // OCR 텍스트에서 검색어 주변 문맥 표시
+                    const textLower = item.extractedText.toLowerCase();
+                    const termIndex = textLower.indexOf(searchTerm);
+                    
+                    if (termIndex !== -1) {
+                        const start = Math.max(0, termIndex - 50);
+                        const end = Math.min(item.extractedText.length, termIndex + searchTerm.length + 50);
+                        contentPreview = '...' + item.extractedText.substring(start, end) + '...';
+                        
+                        // 검색어 하이라이트
+                        const regex = new RegExp(`(${searchTerm})`, 'gi');
+                        contentPreview = contentPreview.replace(regex, '<mark style="background: yellow;">$1</mark>');
+                        highlightedTitle = item.title.replace(regex, '<mark style="background: yellow;">$1</mark>');
+                    }
+                }
+
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">${highlightedTitle}</div>
+                            <div class="file-details">
+                                🌲 한국임업신문 • ${item.date} • ${item.size}
+                                ${item.hasOCR ? ' • <span style="color: #28a745;">📝 검색가능</span>' : ''}
+                                <br><small>업로드: ${item.uploadDate}</small>
+                                ${contentPreview ? `<br><small style="color: #666; font-style: italic;">${contentPreview}</small>` : ''}
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn-small btn-view" onclick="viewPDF('${item.id}')">보기</button>
+                            <button class="btn-small btn-download" onclick="downloadPDF('${item.id}')">다운로드</button>
+                            <button class="btn-small btn-delete" onclick="deletePDF('${item.id}')">삭제</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // PDF 보기
+        function viewPDF(id) {
+            const item = archiveData.find(item => item.id == id);
+            if (item && item.fileData) {
+                const newWindow = window.open();
+                newWindow.document.write(`
+                    <html>
+                        <head><title>${item.title}</title></head>
+                        <body style="margin:0;">
+                            <embed src="${item.fileData}" type="application/pdf" width="100%" height="100%">
+                        </body>
+                    </html>
+                `);
+            } else {
+                showToast('파일을 찾을 수 없습니다', 'error');
+            }
+        }
+
+        // PDF 다운로드
+        function downloadPDF(id) {
+            const item = archiveData.find(item => item.id == id);
+            if (item && item.fileData) {
+                const link = document.createElement('a');
+                link.href = item.fileData;
+                link.download = item.filename;
+                link.click();
+                showToast('다운로드를 시작합니다');
+            } else {
+                showToast('파일을 찾을 수 없습니다', 'error');
+            }
+        }
+
+        // PDF 삭제
+        function deletePDF(id) {
+            if (confirm('정말로 이 파일을 삭제하시겠습니까?')) {
+                archiveData = archiveData.filter(item => item.id != id);
+                localStorage.setItem('newspaperArchive', JSON.stringify(archiveData));
+                renderArchive();
+                showToast('파일이 삭제되었습니다');
+            }
+        }
+
+        // 토스트 알림
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545', 
+                warning: '#ffc107'
+            };
+            toast.style.background = colors[type] || colors.success;
+            toast.style.color = type === 'warning' ? '#000' : '#fff';
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // 초기 렌더링
+        renderArchive();
+        
+        // 오늘 날짜를 기본값으로 설정
+        publishDate.value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
